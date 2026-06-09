@@ -19,7 +19,7 @@ Inspired by khazix-writer, but contains no khazix-writer persona, corpus, prompt
 ## Quick Start
 
 1. 确认用户提供了两个东西：
-   - 参考文章目录，例如 `D:\workspace\test\writetest`
+   - 参考文章目录，例如 `D:\writing\reference-articles`
    - 本次写作需求，例如主题、观点、素材、目标读者、篇幅、输出语言
 2. 运行转换脚本：
    - Windows/CMD: `scripts\run_prepare_corpus.cmd --input-dir "<参考目录>" --output-dir "<输出目录>" --recursive`
@@ -113,15 +113,15 @@ Inspired by khazix-writer, but contains no khazix-writer persona, corpus, prompt
 
 同一个 runtime 目录可以被 Windows Python 和 WSL/Linux Python 复用；bootstrap 会按 Python 版本、操作系统和 CPU 架构隔离依赖目录，避免不同平台的二进制包互相污染。
 
-## Real PDF Acceptance Test
+## Acceptance Test
 
-本仓库验收时使用：
+验收时使用一个包含真实文档的本地目录，例如：
 
-`D:\workspace\test\writetest`
+`<参考目录>`
 
-该目录包含多个中文文件名 PDF。测试时输出到：
+该目录可包含多个中文文件名 PDF 或其它支持格式。测试时输出到：
 
-`D:\workspace\test\writetest\.own-style-writer-test`
+`<参考目录>\.own-style-writer-test`
 
 验收标准：
 

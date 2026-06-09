@@ -57,7 +57,7 @@ git clone git@github.com:snowles/own-style-writer.git ~/.codex/skills/own-style-
 
 ```text
 使用 own-style-writer。
-参考目录：D:\workspace\test\writetest
+参考目录：D:\writing\reference-articles
 写作需求：模仿这批文章的文风，帮我写一篇关于某个主题的公众号文章。
 先总结文风和给大纲，不要直接写正文。
 ```
