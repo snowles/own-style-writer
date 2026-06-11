@@ -1,39 +1,186 @@
 # Own Style Writer
 
-Own Style Writer 是一个“按参考文章文风写作”的 Agent Skill。
-
-它适合这样的场景：你有一批本地文章、PDF、Word、PPT、Excel、HTML 或文本文件，希望 Agent 先学习这批文章的结构、节奏、语气和表达习惯，再按你的新需求写一篇风格一致的文章。
-
-它不是固定作者人格，也不是固定模板。每一次写作都以你当次提供的参考目录为最高风格依据。
+Own Style Writer 是一个“按你的参考文风写作”的 Agent Skill。它会把**要学习文风的材料**和**本次写作用的内容素材**分开处理：前者决定文章怎么写，后者决定文章写什么。
 
 Inspired by khazix-writer, but contains no khazix-writer persona, corpus, prompts, or runtime dependency.
 
-## 它能做什么
+## 快速使用
 
-- 扫描用户指定的本地参考目录
-- 用内置 MarkItDown 把 PDF、DOCX、PPTX、XLSX、HTML、文本等文件转换成 Markdown
-- 生成可复查的转换产物：`converted/*.md`、`manifest.json`、`conversion_errors.json`、`corpus.md`
-- 阅读 `corpus.md` 后提炼统一文风画像
-- 先给文章大纲和风格拟合说明，默认等待用户确认
-- 用户确认后再生成正文和质量检查报告
+把下面这段发给 Agent，把路径和需求换成你自己的：
 
-## 工作流
+```text
+使用 own-style-writer。
 
-1. 用户给出参考文章目录和本次写作需求。
-2. Agent 运行转换脚本，把目录里的文档转成 Markdown。
-3. Agent 阅读 `corpus.md` 和 `manifest.json`。
-4. Agent 生成 `style_profile.md`，总结可执行的文风规则。
-5. Agent 生成 `outline_review.md`，先给用户确认大纲。
-6. 用户确认后，Agent 再生成 `draft.md`。
-7. Agent 最后生成 `quality_report.md`，检查风格贴合度和事实风险。
+风格素材目录：
+D:\你的\风格文章目录
 
-默认不会第一步就直接写完整正文，除非用户明确要求跳过大纲确认。
+写作素材：
+D:\你的\本次写作素材目录
+
+写作需求：
+请学习风格素材目录里的文风，但只使用写作素材里的事实和案例，帮我写一篇关于 XXX 的文章。先给文风总结和大纲，不要直接写正文。
+
+转换方式：
+如果我允许上传并且有 MINERU_API_KEY，就优先用 MinerU；否则用本地 MarkItDown。
+```
+
+简单理解：
+
+- **风格素材**：想让文章“像谁”的材料。
+- **写作素材**：这次文章“写什么”的材料。
+- **MinerU**：PDF 转 Markdown 效果更好，但会上传文件，需要你同意。
+- **MarkItDown**：本地离线转换，不上传文件。
+- 默认会先给你看大纲，确认后才写正文。
+
+## 你需要准备什么
+
+1. **风格素材目录**
+
+   放你想让 Agent 学习文风的文章。最好是一个文件夹，里面可以有 PDF、Word、Markdown、TXT、PPT、Excel、HTML 等。这个目录只用来学习结构、节奏、语气、段落密度、开头结尾和表达习惯。
+
+2. **写作素材**
+
+   放本次文章要使用的事实、案例、数据、观点和背景资料。它可以是另一个文件夹、单个文件、链接、粘贴文本，或者你直接口述。默认不学习这些材料的文风。
+
+3. **写作需求**
+
+   说明主题、目标读者、篇幅、输出语言、观点倾向，以及是否先给大纲。
+
+## MinerU API Key
+
+PDF 解析优先使用 MinerU，效果通常比本地 MarkItDown 更好。使用 MinerU 精准解析需要 API Key：
+
+https://mineru.net/apiManage/docs
+
+设置方式：
+
+PowerShell 临时设置：
+
+```powershell
+$env:MINERU_API_KEY="你的key"
+```
+
+Windows 持久设置：
+
+```powershell
+[Environment]::SetEnvironmentVariable("MINERU_API_KEY","你的key","User")
+```
+
+macOS / Linux / WSL：
+
+```bash
+export MINERU_API_KEY="你的key"
+```
+
+没有 key 也可以继续：
+
+- 允许上传时，可尝试 MinerU 轻量解析 API，适合 10MB / 20 页以内文件，受 IP 限频影响。
+- 不允许上传，或 MinerU 不可用时，会使用内置 MarkItDown 本地离线转换。
+
+## 给 Agent 的使用示例
+
+```text
+使用 own-style-writer。
+
+风格素材目录：
+D:\writing\my-style-samples
+
+写作素材目录：
+D:\writing\topic-materials
+
+写作需求：
+帮我写一篇关于 XXX 的公众号长文，学习风格素材目录里的行文方式，但事实和案例只使用写作素材目录里的内容。先给文风总结和大纲，不要直接写正文。
+
+MinerU：
+我允许上传到 MinerU。
+我已经设置 MINERU_API_KEY。
+```
+
+如果你没有 key，可以这样说：
+
+```text
+我没有 MINERU_API_KEY。可以先尝试 MinerU 轻量解析；不行就用 MarkItDown 本地转换。
+```
+
+如果你不想上传文件，可以这样说：
+
+```text
+不要上传到 MinerU，只用本地 MarkItDown 转换。
+```
+
+## 直接运行转换脚本
+
+Windows PowerShell：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_prepare_workspace.ps1 `
+  -StyleDir "D:\writing\my-style-samples" `
+  -ContentDir "D:\writing\topic-materials" `
+  -OutputDir "D:\writing\workspace\.own-style-writer" `
+  -Recursive
+```
+
+允许上传到 MinerU：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_prepare_workspace.ps1 `
+  -StyleDir "D:\writing\my-style-samples" `
+  -ContentDir "D:\writing\topic-materials" `
+  -OutputDir "D:\writing\workspace\.own-style-writer" `
+  -Recursive `
+  -AllowUpload
+```
+
+macOS / Linux / WSL：
+
+```bash
+scripts/run_prepare_workspace.sh "/path/to/style-samples" "/path/to/topic-materials" --recursive --allow-upload
+```
+
+只用本地 MarkItDown：
+
+```bash
+scripts/run_prepare_workspace.sh "/path/to/style-samples" "/path/to/topic-materials" --recursive --converter markitdown
+```
+
+## 输出文件
+
+转换后会生成：
+
+- `style/converted/*.md`：风格素材转换结果。
+- `style/corpus.md`：合并后的风格语料。
+- `content/converted/*.md`：写作素材转换结果。
+- `content/corpus.md`：合并后的写作素材语料。
+- `manifest.json`：每个文件的来源、角色、转换器、状态和字符数。
+- `conversion_errors.json`：失败项和具体错误。
+
+Agent 后续会生成：
+
+- `style_profile.md`：从风格语料提炼出的写作规则。
+- `content_brief.md`：从写作素材提炼出的事实和观点摘要。
+- `outline_review.md`：待确认大纲。
+- `draft.md`：确认大纲后才生成的正文。
+- `quality_report.md`：风格和事实检查。
+
+## 基本章法
+
+文风可以学习你的参考文章，但一篇好文章仍然要有基本章法。Own Style Writer 会把标题、开头、正文、结尾和全文逻辑作为通用检查项：
+
+- 标题要准确精练，点出主题和核心判断。
+- 开头要尽快切入主题，不绕圈子。
+- 正文要内容充实、层次清楚、重点突出。
+- 结尾要干净有力，有结论、方向、建议、提醒或余味。
+- 全文要前后照应，概念统一，详略得当，避免重复和一盘散沙。
+
+你也可以直接要求：
+
+```text
+请在大纲和质检里同时按基本章法检查标题、开头、正文、结尾和逻辑。
+```
 
 ## 安装
 
-把这个仓库放到你的 Agent Skills 目录即可。
-
-Codex 的常见路径：
+Codex 常见路径：
 
 ```powershell
 git clone git@github.com:snowles/own-style-writer.git $env:USERPROFILE\.codex\skills\own-style-writer
@@ -45,85 +192,15 @@ macOS / Linux：
 git clone git@github.com:snowles/own-style-writer.git ~/.codex/skills/own-style-writer
 ```
 
-如果你的 Agent 支持从 GitHub 安装 skill，也可以直接让它安装：
+如果你的 Agent 支持从 GitHub 安装 skill，也可以让它安装：
 
 ```text
 安装这个 skill：https://github.com/snowles/own-style-writer
 ```
 
-## 使用示例
-
-你可以这样对 Agent 说：
-
-```text
-使用 own-style-writer。
-参考目录：D:\writing\reference-articles
-写作需求：模仿这批文章的文风，帮我写一篇关于某个主题的公众号文章。
-先总结文风和给大纲，不要直接写正文。
-```
-
-如果只想先转换参考语料，也可以直接运行脚本。
-
-Windows CMD：
-
-```cmd
-scripts\run_prepare_corpus.cmd --input-dir "D:\path\to\references" --output-dir "D:\path\to\output" --recursive
-```
-
-Windows PowerShell：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/run_prepare_corpus.ps1 -InputDir "D:\path\to\references" -OutputDir "D:\path\to\output" -Recursive
-```
-
-macOS / Linux / WSL：
-
-```bash
-scripts/run_prepare_corpus.sh "/path/to/references" "/path/to/output" --recursive
-```
-
-## 输出文件
-
-转换脚本会保留这些文件，方便检查和复用：
-
-- `converted/*.md`：每个源文件对应的 Markdown
-- `manifest.json`：源文件、输出文件、字符数、状态
-- `conversion_errors.json`：失败文件和具体错误
-- `corpus.md`：合并后的参考语料
-
-Agent 后续会基于这些文件生成：
-
-- `style_profile.md`：文风画像
-- `outline_review.md`：待确认大纲
-- `draft.md`：正文草稿，默认确认大纲后才生成
-- `quality_report.md`：风格和事实完整性检查
-
-## MarkItDown
-
-本 skill 内置 MarkItDown 源码，位于 `vendor/markitdown`，不依赖你本机另一个 MarkItDown 项目路径。
-
-首次运行时，脚本会自动创建可复用 Python runtime，并按文件类型安装所需依赖。只有 PDF 时会优先安装 PDF 相关依赖；如果后续遇到 Word、PowerPoint、Excel 等格式，会按需补装。
-
-转换文档本身不需要 LLM。MarkItDown 负责本地格式解析；LLM/Agent 负责阅读转换后的 Markdown、提炼文风和写作。
-
-## 适合与不适合
-
-适合：
-
-- 模仿自己历史文章的结构和表达习惯
-- 模仿一批行业评论、公众号文章、报告摘要的行文节奏
-- 把 PDF/Word 等本地资料整理成统一 Markdown 语料
-- 先看文风画像和大纲，再决定是否写正文
-
-不适合：
-
-- 纯标题生成
-- 小红书、朋友圈、推特等短文案
-- 不需要参考文章风格的普通写作
-- 需要完全复刻某个固定人格或口癖的写作
-
 ## 注意事项
 
-- PDF 转换质量取决于源 PDF 的文字层和排版质量。
-- 如果参考语料涉及财经、医疗、法律等高风险领域，正文中的事实、数据和操作性建议需要人工核验。
-- 这个 skill 会学习你提供的参考目录，不会内置或默认使用任何固定语料、人格或提示词。
+- MinerU 会把本地文档上传到第三方服务；Agent 应先明确征得你的同意。
+- 写作素材默认只提供内容，不提供文风。
+- MarkItDown 是内置离线 fallback，不依赖你本机另一个 MarkItDown 项目路径。
+- 财经、医疗、法律等高风险内容需要人工核验关键事实。

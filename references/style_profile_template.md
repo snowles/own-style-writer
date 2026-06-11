@@ -1,10 +1,10 @@
 # Style Profile Template
 
-Use this template after reading `corpus.md`. Write concrete, executable constraints. Avoid vague praise.
+Use this template after reading only `style/corpus.md`. Do not use `content/corpus.md` to infer style unless the user explicitly asked to learn style from content materials too.
 
 ## Corpus Summary
 
-- Source directory:
+- Style source directory:
 - Files read:
 - Successful conversions:
 - Failed conversions:
@@ -15,7 +15,7 @@ Use this template after reading `corpus.md`. Write concrete, executable constrai
 ## Style DNA
 
 - Overall posture:
-- Target reader implied by the corpus:
+- Target reader implied by the style corpus:
 - Typical opening:
 - Typical structure:
 - Paragraph rhythm:
@@ -44,8 +44,8 @@ Use this template after reading `corpus.md`. Write concrete, executable constrai
 
 ## Do Not Use
 
-- Expressions absent from or inconsistent with the corpus:
-- Structures that would break the corpus style:
+- Expressions absent from or inconsistent with the style corpus:
+- Structures that would break the style corpus:
 - Tone mismatches:
 
 ## Fit Notes For This User Request
